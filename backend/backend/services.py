@@ -69,6 +69,9 @@ def get_coordinates(address):
     return (latitude, longitude)
 
 def create_distance(source, destination, distance):
+    """
+    Insert a distance object on database.
+    """
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -79,6 +82,9 @@ def create_distance(source, destination, distance):
     conn.close()
     
 def get_distances():
+    """
+    Select all the distances history from db.
+    """
     try:
         conn = get_db()
         cursor = conn.cursor()

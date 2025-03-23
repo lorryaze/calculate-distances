@@ -9,5 +9,5 @@ poetry run uvicorn main:app --reload
 # Run with Docker
 make build 
 make run
-make logs (to see applications logs)
+make logs (to see application logs)
 make stop (stop container)
