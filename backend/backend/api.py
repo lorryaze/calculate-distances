@@ -1,8 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from .models import DistanceRequest
 from .services import calculate_distance, get_distances
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/distances")
 async def create_distance(request: DistanceRequest):

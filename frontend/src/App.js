@@ -1,68 +1,21 @@
 import Button from '@mui/material/Button';
 import './App.css';
 import TextInput from './components/TextInput';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import HistoryModal from './components/HistoryModal';
+import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-
-
-const historyData = [
-  {
-    id: 1,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.34542537261202966,
-  },
-  {
-    id: 2,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.34542537261202966,
-  },
-  {
-    id: 3,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.34542537261202966,
-  },
-  {
-    id: 4,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.09529483176947287,
-  },
-  {
-    id: 5,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.09529483176947287,
-  },
-  {
-    id: 6,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.8196367762769454,
-  },
-  {
-    id: 7,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.8196367762769454,
-  },
-  {
-    id: 8,
-    source_address: "Rua Augusta, São Paulo",
-    destination_address: "Avenida Paulista, São Paulo",
-    distance: 0.8196367762769454,
-  },
-];
+import axios from 'axios';
 
 
 function App() {
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
+  const [distance, setDistance] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSourceChange = (event) => {
     setSource(event.target.value);
@@ -72,15 +25,55 @@ function App() {
     setDestination(event.target.value);
   };
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
+  const handleOpenModal = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/distances');
+      setHistoryData(response.data);
+      setModalOpen(true);
+    } catch (error) {
+      console.error("Error calling API", error);
+    }
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
   };
 
-  const handleSubmit = async () => {};
+  useEffect(() => {
+    if (!source || !destination) {
+      setDistance(null);
+    }
+  }, [source, destination]);
+
+  const handleSubmit = async () => {
+    if (!source || !destination) {
+      alert('Please fill all the fields!');
+      return;
+    }
+
+    setIsLoading(true);
+    setDistance(null);
+
+    try {
+      const response = await axios.post('http://localhost:8000/distances', {
+        "source": source,
+        "destination": destination
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      setDistance(response.data.distance_km)
+      
+    } catch (error) {
+      console.error("Error calling API:", error);
+      setDistance(null);
+      alert(`Error to calculate distance: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setIsLoading(false)
+    }
+  };
 
   return (
     <div className="App">
@@ -92,7 +85,7 @@ function App() {
           gap: 2,
           maxWidth: 800,
           margin: 'auto',
-          marginTop: 5,
+          marginTop: 25,
         }} //smart coping
       >
         <Typography
@@ -102,10 +95,10 @@ function App() {
           sx={{
             fontFamily: 'Roboto, sans-serif',
             fontWeight: 'bold',
-            mb: 2,
+            mb: 5,
           }} //smart copping
         >
-          Search Distances
+          Calculate Distances
         </Typography>
         <Box
           sx={{
@@ -131,12 +124,30 @@ function App() {
         <Box
           sx={{
             display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center', 
+            gap: 2,
+            width: '100%',
+            minHeight: 25
+          }}
+        >
+          {isLoading ? (
+            <CircularProgress color="primary" /> //smart copping
+          ) : distance !== null ? (
+            <Typography variant="h6" color="success.main">
+              Distance: {Number(distance).toFixed(2)} km
+            </Typography>
+          ) : null}
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
             flexDirection: 'row',
             gap: 2,
           }}
         >
           <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Send
+            Calculate Distance
           </Button>
           <Button variant="contained" color="primary" onClick={handleOpenModal}>
             History
