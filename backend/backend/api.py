@@ -7,7 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+        allow_origins=[
+        "http://localhost:3000",    # local development
+        "http://127.0.0.1:3000",    
+        "http://0.0.0.0:3000",      # Docker default IP
+        "http://frontend-1:3000"      # Service name on Docker
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
